@@ -35,7 +35,8 @@ html,body{
     justify-content: end;
     padding: 6%;
     font-size: 50px; /* Increase the font size */  
-    word-wrap: break-word; /* Enable word wrap */
+    word-wrap: break-word; /* Fallback for older browsers */  
+    word-break: break-word; /* Enable word wrap for iOS devices */  
 }
 .num{
     display: inline-flex;
