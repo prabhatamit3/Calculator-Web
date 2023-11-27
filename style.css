@@ -38,7 +38,7 @@ html,body{
 .num{
     display: inline-flex;
     width: 22%;
-    height: 15%;
+    height: 14%;
     margin-bottom: 1.5%;
     border-radius: 50%;
     justify-content: center;
@@ -50,6 +50,7 @@ html,body{
 }
 #numpad{
     height: 100%;
+    margin-left: 5%;
     
 }
 /* #imagecontainer{
