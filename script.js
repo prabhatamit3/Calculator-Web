@@ -12,134 +12,120 @@
 //       }  
 //     //alert(pno)
 // } 
-var cnum=""
-var onum=""
-var operation=""
+var collectString=''
 document.addEventListener("DOMContentLoaded", function() {  
   var buttons = document.getElementsByClassName("num");  
-
+  var paragraph = document.getElementById("valuedisplay");  
   for (var i = 0; i < buttons.length; i++) {  
       buttons[i].addEventListener("click", function() {  
           var value = this.innerHTML ;
-          changeValue(value);  
+          if(value !='='){
+            collectString=collectString+value;
+            paragraph.innerHTML=collectString
+          }else{
+            //var res=calculateExpression(collectString)
+            var result = calculate(collectString);  
+            if (result !== null) {  
+              if(!Number.isInteger(result)){
+                result=result.toFixed(4)
+              }
+              console.log(`Result: ${result}`);  
+              
+              paragraph.innerHTML=result
+              collectString=result
+            } else {  
+              console.log("Invalid expression");  
+            } 
+
+            //console.log("Result = "+res)
+          }
+          console.log(collectString);
+          
+          //changeValue(value);  
       });  
   }  
 });  
-
-function changeValue(value) {  
-  var paragraph = document.getElementById("valuedisplay");  
+function calculate(expression) {  
+  try {  
+    // Replace all instances of "x" or "X" with "*"  
+    expression = expression.replace(/x|X/g, "*");  
   
-  //console.log(value)
-   
-  //var currentInput=paragraph.innerHTML;
+    // Use the built-in JavaScript function "eval" to safely evaluate the expression  
+    const result = new Function(`return ${expression}`)();  
   
-  
-  //console.log(value)
-  switch (value){
-    case '+':
-      if(cnum!=''){
-        onum=cnum
-      }
-      
-      cnum=""
-      operation="add"
-      currentInput=null
-      console.log('+');
-      break;
-    case '-':
-      if(cnum!=''){
-        onum=cnum
-      }
-      cnum=""
-      operation="subtract"
-      currentInput=null
-      console.log('-');
-      break;
-    case '*':
-      if(cnum!=''){
-        onum=cnum
-      }
-      cnum=""
-      operation="multiply"
-      currentInput=null
-      console.log('/');
-      break;
-    case '/':
-      if(cnum!=''){
-        onum=cnum
-      }
-      cnum=""
-      operation="divide"
-      currentInput=null
-      console.log('*');
-      break;
-    case '=':
-      if(cnum!='' & onum!='' & value=='='){
-        onum=calculate(onum, cnum, operation)
-        paragraph.innerHTML=onum
-      }
-      cnum=""
-      console.log("result"+onum);
-      break;
-    default:
-      cnum=cnum+value;
-      paragraph.innerHTML=cnum
-    
-
-  }
-  console.log("cnum= "+cnum);
-  console.log("0num= "+onum);
-  console.log("operation= "+operation);
-  
-  //console.log("current input= "+currentInput);
-  
+    // Return the evaluated result  
+    return result;  
+  } catch (error) {  
+    console.error(`Error: ${error}`);  
+    return null;  
+  }  
+}  
   
 
-}
-function calculate(a, b, operation) {  
-  var numA = parseFloat(a);  
-  var numB = parseFloat(b);  
+function calculateExpression(expression) {  
+  // Remove any spaces from the expression  
+  expression = expression.replace(/\s/g, "");  
   
-  if (isNaN(numA) || isNaN(numB)) {  
-    throw new Error("Invalid input. Please provide valid numbers.");  
+  // Split the expression into an array of numbers and operators  
+  const numbersAndOperators = expression.match(/[+\-*/]?([0-9.]+)/g);  
+  
+  // Define operator precedence  
+  const precedence = {  
+    "+": 1,  
+    "-": 1,  
+    "*": 2,  
+    "/": 2  
+  };  
+  
+  // Define stacks for numbers and operators  
+  const numbersStack = [];  
+  const operatorsStack = [];  
+  
+  // Iterate over the numbers and operators array  
+  for (let i = 0; i < numbersAndOperators.length; i++) {  
+    const token = numbersAndOperators[i];  
+  
+    // If the token is a number, push it onto the numbers stack  
+    if (!isNaN(token)) {  
+      numbersStack.push(parseFloat(token));  
+    }  
+  
+    // If the token is an operator, pop operators from the operators stack until the top operator has lower precedence, then push the token onto the operators stack  
+    else {  
+      while (operatorsStack.length > 0 && precedence[operatorsStack[operatorsStack.length - 1]] >= precedence[token]) {  
+        const operator = operatorsStack.pop();  
+        const operand2 = numbersStack.pop();  
+        const operand1 = numbersStack.pop();  
+        const result = applyOperator(operator, operand1, operand2);  
+        numbersStack.push(result);  
+      }  
+      operatorsStack.push(token);  
+    }  
   }  
   
-  switch (operation) {  
-    case "add":  
-      return numA + numB;  
-    case "subtract":  
-      return numA - numB;  
-    case "multiply":  
-      return numA * numB;  
-    case "divide":  
-      if (numB === 0) {  
-        throw new Error("Division by zero is not allowed.");  
-      }  
-      return numA / numB;  
-    default:  
-      throw new Error("Invalid operation.");  
+  // Pop any remaining operators from the operators stack and apply them to the numbers on the numbers stack  
+  while (operatorsStack.length > 0) {  
+    const operator = operatorsStack.pop();  
+    const operand2 = numbersStack.pop();  
+    const operand1 = numbersStack.pop();  
+    const result = applyOperator(operator, operand1, operand2);  
+    numbersStack.push(result);  
+  }  
+  
+  // The final result is the only number on the numbers stack  
+  return numbersStack[0];  
+}  
+  
+function applyOperator(operator, operand1, operand2) {  
+  switch (operator) {  
+    case "+":  
+      return operand1 + operand2;  
+    case "-":  
+      return operand1 - operand2;  
+    case "*":  
+      return operand1 * operand2;  
+    case "/":  
+      return operand1 / operand2;  
   }  
 }  
 
-  
-
-
-
-
-// function handleClick(value) {  
-//     const valuedisplay = document.getElementById('valuedisplay');  
-    
-//     alert(valuedisplay.innerHTML)
-//     switch (value) {  
-//       case '=':  
-//         try {  
-//           valuedisplay.innerHTML = eval(valuedisplay.innerHTML);  
-//         } catch (error) {  
-//           valuedisplay.innerHTML = 'Error';  
-//         }  
-//         break;  
-//       default:  
-//         valuedisplay.innerHTML += value;  
-//     }  
-//   }  
-  
